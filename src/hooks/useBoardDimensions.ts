@@ -1,6 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
-
-export type BoardPositionType = 0 | 1 | 2 | 3;
+import { RowOrColumnValueType } from "..";
 
 /**
  * With respect to the board dimensions, return particular tile css position (top or left).
@@ -12,17 +11,17 @@ const useBoardDimensions = () => {
   /**
    * Based on resize dependancy,
    * calculates the percent size of the cell
-   * with window.innerWidth and window.innerHeight property.
-   * then calculates the position with cellSize and the gap between them.
-   * @param { BoardPositionType } value x or y value of the tile
+   * with window.innerWidth and window.innerHeight property. Takes in row position or column position
+   * then calculates the position_in_px with cellSize and the gap between them.
+   * @param { RowOrColumnValueType } value x or y value of the tile
    * @return { number } position of tile in px
    */
   const getTilePosition = useCallback(
-    (value: BoardPositionType) => {
+    (value: RowOrColumnValueType) => {
       const vminVal = Math.min(window.innerWidth, window.innerHeight);
-      const cellSize = (12 / 100) * vminVal;
+      const spaceSize = vminVal >= 768 ? 12 : 20
+      const cellSize = (spaceSize / 100) * vminVal;
       const gap = 8;
-      console.log(value * cellSize + value * gap);
       return value * cellSize + value * gap;
     },
     [resize]
@@ -38,8 +37,7 @@ const useBoardDimensions = () => {
 
   return {
     /**
-     * A function to get the css top/left property value based on the cell the tile is in board
-     * @param { BoardPositionType } - x or y value of the tile
+     * A function to get the css top/left property value based on the row or column position the tile is in board
      */
     getTilePosition,
   };
