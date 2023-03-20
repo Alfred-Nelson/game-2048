@@ -3,6 +3,7 @@ export type TileStateType = {
   y: RowOrColumnValueType;
   value: number;
   id: number;
+  isDoubling?: boolean;
 };
 
 export type BoardStateType = TileStateType[];
@@ -14,7 +15,8 @@ export type GameActionType =
   | "move-right"
   | "move-up"
   | "move-down"
-  | "reset";
+  | "reset"
+  | "refresh";
 
 export type CoordinateType = {
   x: RowOrColumnValueType;
@@ -27,7 +29,7 @@ export type RowOrColumnValueType = 0 | 1 | 2 | 3;
 export type ActionConfigType = {
     sort: (a: TileStateType, b: TileStateType) => numbers,
     orderAxis: "x" | "y",
-    hasOffset: boolean
+    hasEndOffset: boolean
 }
 
 export type TouchCoordType = {

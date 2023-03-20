@@ -99,6 +99,7 @@ export const tileFactory = (
     y: coordinate.y,
     value: randomValBetween(0, 10) > 8 ? 4 : 2,
     id,
+    isDoubling: false,
   };
 };
 
@@ -128,7 +129,12 @@ export const createNewBoardState = (
 
 /**
  *
- * take the current state of game; iterate it through each row; for each row sort it to end or start according to necessity; add each item to new state; end iteration; return new game state;
+ * take the current state of game; 
+ * iterate it through each row/col according to action; 
+ * for each row/col sort it to end or start according to action; 
+ * add each item to new state; 
+ * end iteration; 
+ * return new game state;
  * @param actionConfigObj has sort function and order axis key helping to select movement change
  * @param currentBoardConfig current state of the game with score
  * @returns new state of the game with new score
@@ -143,20 +149,30 @@ export const makeMove = (
   const currentBoardState = currentBoardConfig.state;
 
   for (let i = 0; i < 4; i++) {
-    const tilesAtColumnI = currentBoardState.filter(
+    let mergeOffset = 0
+    const tilesAtI = currentBoardState.filter(
       (tile) => (actionConfigObj.orderAxis === "x" ? tile.y : tile.x) === i
     );
-    tilesAtColumnI.sort(actionConfigObj.sort);
-    tilesAtColumnI.forEach((tile, idx) => {
+    tilesAtI.sort(actionConfigObj.sort);
+    tilesAtI.forEach((tile, idx) => {
       if (tile.id > highest) highest = tile.id;
+      if(idx) {
+        const lastTile = newBoardState.slice(-1)[0]
+        if( lastTile.value === tile.value  && !lastTile.isDoubling ) {
+            score += lastTile.value * 2
+            lastTile.isDoubling = true;
+            lastTile.id = tile.id;
+            mergeOffset = mergeOffset + 1
+            return;
+        } 
+      }
       newBoardState.push({
         ...tile,
-        [actionConfigObj.orderAxis]: (actionConfigObj.hasOffset
-          ? 3 - idx
-          : idx) as RowOrColumnValueType,
+        [actionConfigObj.orderAxis]: (actionConfigObj.hasEndOffset
+          ? 3 - (idx - mergeOffset)
+          : idx - mergeOffset) as RowOrColumnValueType,
       });
     });
-    console.log(tilesAtColumnI, i);
   }
 
   const available = getAvailableSpaces(newBoardState);

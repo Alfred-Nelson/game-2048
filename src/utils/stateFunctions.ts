@@ -37,7 +37,7 @@ const gameReducer = (
       );
       return [newConfig, ...movementHistory.slice(pointer)];
     default:
-      return movementHistory;
+      return [...movementHistory];
   }
 };
 
