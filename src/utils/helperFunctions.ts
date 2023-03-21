@@ -80,8 +80,11 @@ export const tileFactory = (
   let randVal;
 
   if (availableSpaces) {
+    /**
+     * Don not create a tile if no available spaces are present
+     */
     if (!availableSpaces.length) return null;
-    randVal = randomValBetween(0, availableSpaces.length);
+    randVal = randomValBetween(0, availableSpaces.length - 1);
     coordinate = availableSpaces[randVal];
   } else {
     coordinate = {
@@ -90,7 +93,11 @@ export const tileFactory = (
     };
   }
 
+  /**
+   * the following condition is fallback if the randomValueBetween failed 
+   */
   if (!coordinate && availableSpaces?.length) {
+    console.log("randVal", randVal, availableSpaces.length)
     coordinate = availableSpaces[0];
   }
 
@@ -144,18 +151,32 @@ export const makeMove = (
   currentBoardConfig: MovementConfigType
 ) => {
   const newBoardState: BoardStateType = [];
-  let highest = -1;
+  let highestId = -1;
   let score = currentBoardConfig.score;
   const currentBoardState = currentBoardConfig.state;
 
   for (let i = 0; i < 4; i++) {
+    /**
+     * if a merge is done add offset to rest of the tiles in the row/col picked
+     */
     let mergeOffset = 0
-    const tilesAtI = currentBoardState.filter(
-      (tile) => (actionConfigObj.orderAxis === "x" ? tile.y : tile.x) === i
-    );
-    tilesAtI.sort(actionConfigObj.sort);
-    tilesAtI.forEach((tile, idx) => {
-      if (tile.id > highest) highest = tile.id;
+
+    /**
+     * the callback that picks the row/col necessary
+     */
+    const rowOrColumnPicker = 
+    (tile: TileStateType) => (actionConfigObj.orderAxis === "x" ? tile.y : tile.x) === i
+    
+    /**
+     * a callback that updates the position according to movement and update the gameState
+     * tasks it handle: 
+     * 1. calculate the highest id to get the id of new tile that is about to be created
+     * 2. handles doubling and updates isDoubling state
+     * 3. manages the offset with respect to doubling state
+     * 4. creates the new boardState aka gameState
+     */
+    const updatePosition = (tile: TileStateType, idx: number) => {
+      if (tile.id > highestId) highestId = tile.id;
       if(idx) {
         const lastTile = newBoardState.slice(-1)[0]
         if( lastTile.value === tile.value  && !lastTile.isDoubling ) {
@@ -172,12 +193,15 @@ export const makeMove = (
           ? 3 - (idx - mergeOffset)
           : idx - mergeOffset) as RowOrColumnValueType,
       });
-    });
+    }
+
+    const tilesAtI = currentBoardState.filter(rowOrColumnPicker);
+    tilesAtI.sort(actionConfigObj.sort);
+    tilesAtI.forEach(updatePosition);
   }
 
   const available = getAvailableSpaces(newBoardState);
-  const newTile = tileFactory(highest + 1, available);
+  const newTile = tileFactory(highestId + 1, available);
   if (!newTile) return { state: newBoardState, score };
-
   return { state: [...newBoardState, newTile], score };
 };

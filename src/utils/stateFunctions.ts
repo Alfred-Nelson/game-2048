@@ -2,6 +2,12 @@ import { ActionConfigType, GameActionType, MovementConfigType } from "..";
 import { actionConfig } from "./constants";
 import { makeMove } from "./helperFunctions";
 
+/**
+ * 
+ * @param movementHistory all movement ever done.
+ * @param action has movement type and pointer
+ * @returns new movement history
+ */
 const gameReducer = (
   movementHistory: MovementConfigType[],
   action: { type: GameActionType; payload: { pointer: number } }

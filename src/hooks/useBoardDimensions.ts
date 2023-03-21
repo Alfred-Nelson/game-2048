@@ -2,8 +2,9 @@ import { useCallback, useState, useEffect } from "react";
 import { RowOrColumnValueType } from "..";
 
 /**
- * With respect to the board dimensions, return particular tile css position (top or left).
- * Handles screen resize to adjust the tile size accordingly
+ * tasks done by the hook:
+ * 1. With respect to the board dimensions, return particular tile css position (top or left).
+ * 2. Handles screen resize to adjust the tile size accordingly
  */
 const useBoardDimensions = () => {
   const [resize, setResize] = useState(0);
@@ -27,6 +28,9 @@ const useBoardDimensions = () => {
     [resize]
   );
 
+  /**
+   * The effect sets up a resize observer.
+   */
   useEffect(() => {
     const observer = new ResizeObserver((entries) => {
       setResize(entries[0].target.clientWidth);
