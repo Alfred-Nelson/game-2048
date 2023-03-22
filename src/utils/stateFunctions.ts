@@ -1,6 +1,6 @@
 import { ActionConfigType, GameActionType, MovementConfigType } from "..";
 import { actionConfig } from "./constants";
-import { makeMove } from "./helperFunctions";
+import { createNewBoardState, makeMove } from "./helperFunctions";
 
 /**
  * 
@@ -42,6 +42,8 @@ const gameReducer = (
         movementHistory[pointer]
       );
       return [newConfig, ...movementHistory.slice(pointer)];
+    case "reset":
+      return [{state: [ ...createNewBoardState(2) ], score: 0}]
     default:
       return [...movementHistory];
   }

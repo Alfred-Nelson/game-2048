@@ -94,10 +94,9 @@ export const tileFactory = (
   }
 
   /**
-   * the following condition is fallback if the randomValueBetween failed 
+   * the following condition is fallback if the randomValueBetween failed
    */
   if (!coordinate && availableSpaces?.length) {
-    console.log("randVal", randVal, availableSpaces.length)
     coordinate = availableSpaces[0];
   }
 
@@ -136,11 +135,11 @@ export const createNewBoardState = (
 
 /**
  *
- * take the current state of game; 
- * iterate it through each row/col according to action; 
- * for each row/col sort it to end or start according to action; 
- * add each item to new state; 
- * end iteration; 
+ * take the current state of game;
+ * iterate it through each row/col according to action;
+ * for each row/col sort it to end or start according to action;
+ * add each item to new state;
+ * end iteration;
  * return new game state;
  * @param actionConfigObj has sort function and order axis key helping to select movement change
  * @param currentBoardConfig current state of the game with score
@@ -159,17 +158,17 @@ export const makeMove = (
     /**
      * if a merge is done add offset to rest of the tiles in the row/col picked
      */
-    let mergeOffset = 0
+    let mergeOffset = 0;
 
     /**
      * the callback that picks the row/col necessary
      */
-    const rowOrColumnPicker = 
-    (tile: TileStateType) => (actionConfigObj.orderAxis === "x" ? tile.y : tile.x) === i
-    
+    const rowOrColumnPicker = (tile: TileStateType) =>
+      (actionConfigObj.orderAxis === "x" ? tile.y : tile.x) === i;
+
     /**
      * a callback that updates the position according to movement and update the gameState
-     * tasks it handle: 
+     * tasks it handle:
      * 1. calculate the highest id to get the id of new tile that is about to be created
      * 2. handles doubling and updates isDoubling state
      * 3. manages the offset with respect to doubling state
@@ -177,15 +176,15 @@ export const makeMove = (
      */
     const updatePosition = (tile: TileStateType, idx: number) => {
       if (tile.id > highestId) highestId = tile.id;
-      if(idx) {
-        const lastTile = newBoardState.slice(-1)[0]
-        if( lastTile.value === tile.value  && !lastTile.isDoubling ) {
-            score += lastTile.value * 2
-            lastTile.isDoubling = true;
-            lastTile.id = tile.id;
-            mergeOffset = mergeOffset + 1
-            return;
-        } 
+      if (idx) {
+        const lastTile = newBoardState.slice(-1)[0];
+        if (lastTile.value === tile.value && !lastTile.isDoubling) {
+          score += lastTile.value * 2;
+          lastTile.isDoubling = true;
+          lastTile.id = tile.id;
+          mergeOffset = mergeOffset + 1;
+          return;
+        }
       }
       newBoardState.push({
         ...tile,
@@ -193,7 +192,7 @@ export const makeMove = (
           ? 3 - (idx - mergeOffset)
           : idx - mergeOffset) as RowOrColumnValueType,
       });
-    }
+    };
 
     const tilesAtI = currentBoardState.filter(rowOrColumnPicker);
     tilesAtI.sort(actionConfigObj.sort);
@@ -204,4 +203,43 @@ export const makeMove = (
   const newTile = tileFactory(highestId + 1, available);
   if (!newTile) return { state: newBoardState, score };
   return { state: [...newBoardState, newTile], score };
+};
+
+/**
+ * The function checks whether the game is over or not.
+ * @param gameState current gameState aka boardstate
+ * @returns a boolean showing is the game over?
+ */
+export const checkGameOver = (gameState: BoardStateType) => {
+  let isGameOver;
+
+  /**
+   * Check each col has duplicate adjacent value
+   */
+  for (let i = 0; i < 4; i++) {
+    const tilesInColI = gameState.filter((tile) => tile.x === i);
+    tilesInColI.sort((a, b) => a.y - b.y);
+    isGameOver = !tilesInColI.some(
+      (tile, id) => tile.value === tilesInColI[id - 1]?.value
+    );
+    if (!isGameOver) break;
+  }
+  /**  if has duplicate adjacent value in any col then the game is not over. */
+  if (!isGameOver) return isGameOver;
+
+  /**
+   * check each row has a dupe adjacent value
+   */
+  for (let i = 0; i < 4; i++) {
+    if (!isGameOver) {
+      break;
+    }
+    const tilesInRowI = gameState.filter((tile) => tile.y === i);
+    tilesInRowI.sort((a, b) => a.x - b.x);
+    isGameOver = !tilesInRowI.some(
+      (tile, id) => tile.value === tilesInRowI[id - 1]?.value
+    );
+  }
+
+  return isGameOver;
 };

@@ -5,9 +5,10 @@ import {
   useState,
   Dispatch,
   SetStateAction,
+  useCallback,
 } from "react";
-import { TouchCoordType } from "..";
-import { createNewBoardState } from "../utils/helperFunctions";
+import { GameStatusType } from "..";
+import { checkGameOver, createNewBoardState } from "../utils/helperFunctions";
 import { gameReducer } from "../utils/stateFunctions";
 
 /**
@@ -17,7 +18,7 @@ import { gameReducer } from "../utils/stateFunctions";
  * 2. handles score
  * 3. handles doubling nature
  * 4. handles to pointer to act on undo and redo
- * 5. if in replay removes the movement handler.
+ * 5. if replay is set removes the movement handler.
  *
  * @param pointer pointer to the gameState in action.
  * @param setPointer change pointer function
@@ -27,9 +28,12 @@ import { gameReducer } from "../utils/stateFunctions";
 const useMainGameControls = (
   pointer: number,
   setPointer: Dispatch<SetStateAction<number>>,
-  preview: boolean
+  preview: boolean,
+  setGameStatus: Dispatch<SetStateAction<GameStatusType>>,
+  gameStatus: GameStatusType,
 ) => {
   const initialGameState = useMemo(() => createNewBoardState(2), []);
+  const [reset, setReset] = useState(false)
   const [move, setMovement] = useState("");
   // const [touchStart, setTouchStart] = useState<TouchCoordType | null>();
   const [movementHistory, dispatch] = useReducer(gameReducer, [
@@ -54,6 +58,15 @@ const useMainGameControls = (
     setMovement("");
   };
 
+  /**
+   * A function to be returned to do reset feature
+   */
+  const doReset = () => {
+    setReset(true)
+    setPointer(0)
+    setGameStatus("PROGRESS")
+  }
+
   //   const handleTouch = (e: TouchEvent) => {
   //     if(e.touches.length !== 1) return
   //     if(!touchStart) return
@@ -64,6 +77,14 @@ const useMainGameControls = (
   //     if(diffX > diffY)
   //   }
 
+  useEffect(() => {
+    if(reset) {
+      dispatch({type: "reset", payload: { pointer }})
+    }
+  }, [reset])
+
+  const eventHandler = useCallback((e: KeyboardEvent) => setMovement(e.key), [])
+
   /**
    * This effect handles the keydown event. previously it was directly handled
    * without the move state. but stale nature of closure was not changeing the 
@@ -73,9 +94,11 @@ const useMainGameControls = (
    */
   useEffect(() => {
     if (preview) return;
-    window.addEventListener("keydown", (e) => setMovement(e.key));
-    return () => window.removeEventListener("keydown", () => {});
-  }, [preview]);
+    if(!gameStatus.includes("PROG")) return;
+    console.log(gameStatus, "gameStatus", !gameStatus.includes("PROG"))
+    window.addEventListener("keydown", eventHandler);
+    return () => window.removeEventListener("keydown", eventHandler);
+  }, [preview, gameStatus]);
 
   /**
    * the effect calls the movment handler function to call the necessary dispatch
@@ -98,23 +121,39 @@ const useMainGameControls = (
    * here 200 represent the animation time for the movement.
    */
   useEffect(() => {
+    if(reset) {
+      setReset(false);
+      return;
+    }
     const currentBoardConfig = movementHistory[pointer].state;
     const hasDoublingTiles = currentBoardConfig.some((tile) => tile.isDoubling);
+    const changeAllDoublingTiles = () =>
+      currentBoardConfig.forEach((tile) => {
+        if (!tile.isDoubling) return;
+        tile.value = 2 * tile.value;
+        tile.isDoubling = false;
+        if(tile.value === 2048 && !gameStatus.includes("WIN")) {
+          setGameStatus("WIN");
+        }
+      });
 
     if (hasDoublingTiles) {
-      const changeAllDoublingTiles = () =>
-        currentBoardConfig.forEach((tile) => {
-          if (!tile.isDoubling) return;
-          tile.value = 2 * tile.value;
-          tile.isDoubling = false;
-        });
-
       const id = setInterval(() => {
         changeAllDoublingTiles();
         dispatch({ type: "refresh", payload: { pointer } });
       }, 200);
 
-      return () => clearInterval(id);
+      return () => {
+        changeAllDoublingTiles();
+        clearInterval(id)
+      };
+    } else {
+      if(currentBoardConfig.length === 16) {
+        const isGameOver = checkGameOver(currentBoardConfig)
+        if(isGameOver) {
+          setGameStatus("OVER")
+        }
+      }
     }
   }, [movementHistory]);
 
@@ -129,6 +168,7 @@ const useMainGameControls = (
   return {
     ...movementHistory[pointer],
     totalMovements: movementHistory.length,
+    doReset
   };
 };
 

@@ -7,6 +7,15 @@
     <link href="/favicon-32x32.png" rel="icon" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script type="module">
+      import RefreshRuntime from 'http://localhost:3000/@react-refresh'
+  
+      RefreshRuntime.injectIntoGlobalHook(window)
+      window.$RefreshReg$ = () => {
+      }
+      window.$RefreshSig$ = () => (type) => type
+      window.__vite_plugin_react_preamble_installed__ = true
+  </script>
     <title>2048</title>
     <meta name="theme-color" content="#ffffff" />
   </head>

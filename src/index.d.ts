@@ -36,3 +36,5 @@ export type TouchCoordType = {
     x: number;
     y: number
 }
+
+export type GameStatusType = "PROGRESS" | "OVER" | "WIN" | "WIN_PROG"
