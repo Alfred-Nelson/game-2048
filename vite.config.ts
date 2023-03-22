@@ -1,12 +1,15 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "./",
   plugins: [
     react(),
     VitePWA({
+      registerType: "prompt",
+      includeAssets: ["favicon.ico", "apple-touch-icon.png", "android-chrome-192x192.png"],
       manifest: {
         name: "game-2048",
         short_name: "2048",
