@@ -22,10 +22,10 @@ const Controls = ({
   gameStatus,
   setGameStatus,
 }: ControlType) => {
-  const buttonStyle = "text-tgrey bg-space px-3 text-xl lg:text-2xl md:text-4xl font-semibold rounded-md";
+  const buttonStyle = "text-tgrey bg-space px-3 text-xl lg:text-4xl md:text-2xl font-semibold rounded-md";
   return (
     <section className="w-full md:w-[30vw] flex justify-center items-center px-5">
-      <div className="mt-[10vh] max-w-screen flex justify-center flex-wrap md:grid md:grid-cols-2 gap-y-[3vh] gap-x-[3vw]">
+      <div className="mt-[10vh] max-w-screen flex justify-center flex-wrap md:grid md:grid-cols-1 lg:grid-cols-2 gap-y-[3vh] gap-x-[3vw]">
         <button
           onClick={() =>
             setPointer((prev) => Math.min(prev + 1, totalMovements - 1))

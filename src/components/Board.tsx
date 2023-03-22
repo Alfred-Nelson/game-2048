@@ -24,14 +24,14 @@ const Board = ({ children, score = 0, gameStatus, pointer }: BoardPropType) => {
           <h1 className="text-6xl text-white font-bold mb-[5vh] text-center">
             2048
           </h1>
-          <div className="w-full flex flex-wrap gap-x-[1vw] gap-y-[1vh] items-center">
-            <div className="flex gap-x-[1vw]">
+          <div className="w-full flex flex-wrap gap-y-[1vh] items-center">
+            <div className="w-[50%] flex gap-x-[1vw]">
             <p>High Score: </p>
             <p className="px-2 rounded-md text-tgrey bg-board mr-[4vw]">
               {localStorage.getItem("high-score") || 0}
             </p>
             </div>
-            <div className="flex gap-x-[1vw]">
+            <div className="w-[50%] flex gap-x-[1vw]">
             <p>Score: </p>
             <p className="px-2 rounded-md text-tgrey bg-board">{score}</p>
             </div>
@@ -42,7 +42,7 @@ const Board = ({ children, score = 0, gameStatus, pointer }: BoardPropType) => {
             {Array.from({ length: 16 }).map((_, id) => (
               <div
                 key={id}
-                className="bg-space w-[16vmin] h-[16vmin] md:w-[12vmin] md:h-[12vmin] rounded-md"
+                className="bg-space w-[16vmin] h-[16vmin] lg:w-[12vmin] sm:w-[14vmin] sm:h-[14vmin] lg:h-[12vmin] md:w-[14vmin] md:h-[14vmin] rounded-md"
               ></div>
             ))}
             {children}

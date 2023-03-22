@@ -20,7 +20,8 @@ const useBoardDimensions = () => {
   const getTilePosition = useCallback(
     (value: RowOrColumnValueType) => {
       const vminVal = Math.min(window.innerWidth, window.innerHeight);
-      const spaceSize = window.innerWidth >= 768 ? 12 : 16
+      const spaceSize =
+        window.innerWidth >= 768 ? (window.innerWidth >= 1024 ? 12 : 14) : window.innerWidth >= 640 ? 14 : 16;
       const cellSize = (spaceSize / 100) * vminVal;
       const gap = 8;
       return value * cellSize + value * gap;

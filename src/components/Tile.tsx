@@ -1,7 +1,7 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import useBoardDimensions from "../hooks/useBoardDimensions";
-import { BoardStateType, MovementConfigType, RowOrColumnValueType, TileStateType } from "..";
+import { TileStateType } from "..";
 import { getColorStyle } from "../utils/constants";
 
 const Tile = ({ x, y, value, id, isDoubling = false }: TileStateType) => {
@@ -18,7 +18,7 @@ const Tile = ({ x, y, value, id, isDoubling = false }: TileStateType) => {
       }}
       layoutId={`tile_${id}`}
       transition={{ duration: 0.2 }}
-      className={`absolute ${color} ${value < 8 ? "text-tgrey" : "text-white"} rounded-md w-[16vmin] h-[16vmin] md:w-[12vmin] md:h-[12vmin] font-semibold text-lg sm:text-xl md:text-3xl flex justify-center items-center`}
+      className={`absolute ${color} ${value < 8 ? "text-tgrey" : "text-white"} rounded-md w-[16vmin] h-[16vmin] lg:w-[12vmin] lg:h-[12vmin] md:w-[14vmin] md:h-[14vmin] sm:w-[14vmin] sm:h-[14vmin] font-semibold text-lg sm:text-xl md:text-3xl flex justify-center items-center`}
     >
       {value}
     </motion.div>
