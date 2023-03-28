@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, RefObject } from "react";
 import { GameStatusType } from ".";
 import Board from "./components/Board";
 import Controls from "./components/Controls";
@@ -8,19 +8,34 @@ import usePreview from "./hooks/usePreview";
 
 function App() {
   const [pointer, setPointer] = useState(0);
-  const [gameStatus, setGameStatus] = useState<GameStatusType>("PROGRESS")
+  const [gameStatus, setGameStatus] = useState<GameStatusType>("PROGRESS");
   const [preview, setPreview] = useState(false);
+  const boardRef = useRef<HTMLDivElement>(null);
   const {
     state: gameState,
     score,
     totalMovements,
-    doReset
-  } = useMainGameControls(pointer, setPointer, preview, setGameStatus, gameStatus);
+    doReset,
+    setMovement,
+  } = useMainGameControls(
+    pointer,
+    setPointer,
+    preview,
+    setGameStatus,
+    gameStatus,
+    boardRef
+  );
   usePreview({ preview, setPointer, setPreview, pointer });
 
   return (
     <div className="h-[100svh] flex flex-col md:flex-row md:justify-evenly text-white font-semibold text-md md:text-lg pt-[10vh] md:pt-0 items-center bg-[#755F8B]">
-      <Board score={score} gameStatus={gameStatus} pointer={pointer}>
+      <Board
+        preview={preview}
+        setMovement={setMovement}
+        score={score}
+        gameStatus={gameStatus}
+        pointer={pointer}
+      >
         {gameState?.map((tile) => (
           <Tile key={tile.id} {...tile} />
         ))}

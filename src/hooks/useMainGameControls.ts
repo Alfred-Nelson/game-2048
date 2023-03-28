@@ -6,8 +6,9 @@ import {
   Dispatch,
   SetStateAction,
   useCallback,
+  RefObject,
 } from "react";
-import { GameStatusType } from "..";
+import { GameStatusType, TouchCoordType } from "..";
 import { checkGameOver, createNewBoardState } from "../utils/helperFunctions";
 import { gameReducer } from "../utils/stateFunctions";
 
@@ -31,15 +32,15 @@ const useMainGameControls = (
   preview: boolean,
   setGameStatus: Dispatch<SetStateAction<GameStatusType>>,
   gameStatus: GameStatusType,
+  boardRef: RefObject<HTMLDivElement>
 ) => {
   const initialGameState = useMemo(() => createNewBoardState(2), []);
-  const [reset, setReset] = useState(false)
+  const [reset, setReset] = useState(false);
   const [move, setMovement] = useState("");
-  // const [touchStart, setTouchStart] = useState<TouchCoordType | null>();
+  const [touchStart, setTouchStart] = useState<TouchCoordType | null>();
   const [movementHistory, dispatch] = useReducer(gameReducer, [
     { state: initialGameState, score: 0 },
   ]);
-
 
   /**
    * @param move the movement made - handled from event listener
@@ -62,40 +63,32 @@ const useMainGameControls = (
    * A function to be returned to do reset feature
    */
   const doReset = () => {
-    setReset(true)
-    setPointer(0)
-    setGameStatus("PROGRESS")
-  }
-
-  //   const handleTouch = (e: TouchEvent) => {
-  //     if(e.touches.length !== 1) return
-  //     if(!touchStart) return
-  //     const { screenX, screenY } = e.touches[0]
-  //     const diffX = screenX - touchStart.x
-  //     const diffY = screenY - touchStart.y
-
-  //     if(diffX > diffY)
-  //   }
+    setReset(true);
+    setPointer(0);
+    setGameStatus("PROGRESS");
+  };
+  
+  const eventHandler = useCallback(
+    (e: KeyboardEvent) => setMovement(e.key),
+    []
+  );
 
   useEffect(() => {
-    if(reset) {
-      dispatch({type: "reset", payload: { pointer }})
+    if (reset) {
+      dispatch({ type: "reset", payload: { pointer } });
     }
-  }, [reset])
-
-  const eventHandler = useCallback((e: KeyboardEvent) => setMovement(e.key), [])
+  }, [reset]);
 
   /**
    * This effect handles the keydown event. previously it was directly handled
-   * without the move state. but stale nature of closure was not changeing the 
+   * without the move state. but stale nature of closure was not changeing the
    * value of pointer which was essential to have control over when handling
    * the undo and redo property. This effect would only set the event listeners
    * if the preview is not set, ie. while in preview you cannot do a movement.
    */
   useEffect(() => {
     if (preview) return;
-    if(!gameStatus.includes("PROG")) return;
-    console.log(gameStatus, "gameStatus", !gameStatus.includes("PROG"))
+    if (!gameStatus.includes("PROG")) return;
     window.addEventListener("keydown", eventHandler);
     return () => window.removeEventListener("keydown", eventHandler);
   }, [preview, gameStatus]);
@@ -114,14 +107,14 @@ const useMainGameControls = (
   /**
    * the following effect is to doubling nature of tiles
    * if a tile about to be doubled, the isDoubling property of the tile is set.
-   * then after the state change is done, a wait of 200 seconds is done and 
+   * then after the state change is done, a wait of 200 seconds is done and
    * then the value is doubled and isdoubling is unset.
-   * this is to handle the motion animation of tile at movement 
+   * this is to handle the motion animation of tile at movement
    * and then change the value only after the movement animation.
    * here 200 represent the animation time for the movement.
    */
   useEffect(() => {
-    if(reset) {
+    if (reset) {
       setReset(false);
       return;
     }
@@ -132,7 +125,7 @@ const useMainGameControls = (
         if (!tile.isDoubling) return;
         tile.value = 2 * tile.value;
         tile.isDoubling = false;
-        if(tile.value === 2048 && !gameStatus.includes("WIN")) {
+        if (tile.value === 2048 && !gameStatus.includes("WIN")) {
           setGameStatus("WIN");
         }
       });
@@ -145,30 +138,23 @@ const useMainGameControls = (
 
       return () => {
         changeAllDoublingTiles();
-        clearInterval(id)
+        clearInterval(id);
       };
     } else {
-      if(currentBoardConfig.length === 16) {
-        const isGameOver = checkGameOver(currentBoardConfig)
-        if(isGameOver) {
-          setGameStatus("OVER")
+      if (currentBoardConfig.length === 16) {
+        const isGameOver = checkGameOver(currentBoardConfig);
+        if (isGameOver) {
+          setGameStatus("OVER");
         }
       }
     }
   }, [movementHistory]);
 
-  //   useEffect(() => {
-  //     window.addEventListener("touchstart", (e) =>  {
-  //         if( e.touches.length !== 1 ) return
-  //         setTouchStart({ x: e.touches[0].screenX, y: e.touches[0].screenX })
-  //     })
-  //     window.addEventListener("touchend", handleTouch )
-  //   }, [])
-
   return {
     ...movementHistory[pointer],
     totalMovements: movementHistory.length,
-    doReset
+    doReset,
+    setMovement
   };
 };
 
